@@ -4236,6 +4236,8 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
             c;
 
           c=ReadBlobByte(image);
+          if (c == EOF)
+            break;
           chunk[i]=(unsigned char) c;
         }
 
@@ -5118,6 +5120,8 @@ static Image *ReadMNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 c;
 
               c=ReadBlobByte(image);
+              if (c == EOF)
+                break;
               chunk[i]=(unsigned char) c;
             }
 

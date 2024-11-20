@@ -203,6 +203,8 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
     if (pcd_table[i] == (PCDTable *) NULL)
       {
         buffer=(unsigned char *) RelinquishMagickMemory(buffer);
+        for (j=0; j < i; j++)
+          pcd_table[j]=(PCDTable *) RelinquishMagickMemory(pcd_table[j]);
         ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
       }
@@ -214,6 +216,8 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
       if (r->length > 16)
         {
           buffer=(unsigned char *) RelinquishMagickMemory(buffer);
+          for (j=0; j <= i; j++)
+            pcd_table[j]=(PCDTable *) RelinquishMagickMemory(pcd_table[j]);
           return(MagickFalse);
         }
       PCDGetBits(16);
@@ -605,7 +609,15 @@ static Image *ReadPCDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     10*sizeof(*luma));
   if ((chroma1 == (unsigned char *) NULL) ||
       (chroma2 == (unsigned char *) NULL) || (luma == (unsigned char *) NULL))
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      if (chroma1 != (unsigned char *) NULL)
+        chroma1=(unsigned char *) RelinquishMagickMemory(chroma1);
+      if (chroma2 != (unsigned char *) NULL)
+        chroma2=(unsigned char *) RelinquishMagickMemory(chroma2);
+      if (luma != (unsigned char *) NULL)
+        luma=(unsigned char *) RelinquishMagickMemory(luma);
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   /*
     Advance to image data.
   */

@@ -61,6 +61,7 @@
 #include "MagickCore/layer.h"
 #include "MagickCore/mime-private.h"
 #include "MagickCore/memory_.h"
+#include "MagickCore/memory-private.h"
 #include "MagickCore/monitor.h"
 #include "MagickCore/montage.h"
 #include "MagickCore/morphology.h"
@@ -323,7 +324,7 @@ static const char *GetOpenCLCacheDirectory()
 
               if (status != MagickFalse)
                 {
-                  temp=(char*) AcquireMagickMemory(strlen(path)+1);
+                  temp=(char*) AcquireCriticalMemory(strlen(path)+1);
                   CopyMagickString(temp,path,strlen(path)+1);
                 }
               home=DestroyString(home);
@@ -1161,7 +1162,7 @@ static void BenchmarkOpenCLDevices(MagickCLEnv clEnv)
 
   testEnv=AcquireMagickCLEnv();
   testEnv->library=openCL_library;
-  testEnv->devices=(MagickCLDevice *) AcquireMagickMemory(
+  testEnv->devices=(MagickCLDevice *) AcquireCriticalMemory(
     sizeof(MagickCLDevice));
   testEnv->number_devices=1;
   testEnv->benchmark_thread_id=GetMagickThreadId();
@@ -1247,8 +1248,13 @@ static void CacheOpenCLKernel(MagickCLDevice device,char *filename,
     CL_PROGRAM_BINARY_SIZES,sizeof(size_t),&binaryProgramSize,NULL);
   if (status != CL_SUCCESS)
     return;
-
   binaryProgram=(unsigned char*) AcquireMagickMemory(binaryProgramSize);
+  if (binaryProgram == (unsigned char *) NULL)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),
+        ResourceLimitError,"MemoryAllocationFailed","`%s'",filename);
+      return;
+    }
   status=openCL_library->clGetProgramInfo(device->program,
     CL_PROGRAM_BINARIES,sizeof(unsigned char*),&binaryProgram,NULL);
   if (status == CL_SUCCESS)
@@ -1303,7 +1309,7 @@ static void LogOpenCLBuildFailure(MagickCLDevice device,const char *kernel,
 
   openCL_library->clGetProgramBuildInfo(device->program,device->deviceID,
     CL_PROGRAM_BUILD_LOG,0,NULL,&log_size);
-  log=(char*)AcquireMagickMemory(log_size);
+  log=(char*)AcquireCriticalMemory(log_size);
   openCL_library->clGetProgramBuildInfo(device->program,device->deviceID,
     CL_PROGRAM_BUILD_LOG,log_size,log,&log_size);
 
@@ -2274,7 +2280,7 @@ static void LoadOpenCLDevices(MagickCLEnv clEnv)
 
       openCL_library->clGetPlatformInfo(platforms[i],CL_PLATFORM_NAME,0,NULL,
         &length);
-      device->platform_name=AcquireQuantumMemory(length,
+      device->platform_name=AcquireCriticalMemory(length*
         sizeof(*device->platform_name));
       openCL_library->clGetPlatformInfo(platforms[i],CL_PLATFORM_NAME,length,
         device->platform_name,NULL);

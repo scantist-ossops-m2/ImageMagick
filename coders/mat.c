@@ -1243,6 +1243,11 @@ done_reading:
           }
         }
         }
+
+    if (quantum_info != (QuantumInfo *) NULL)
+      quantum_info=DestroyQuantumInfo(quantum_info);
+    if (clone_info)
+      clone_info=DestroyImageInfo(clone_info);
   }
 
   RelinquishMagickMemory(BImgBuff);

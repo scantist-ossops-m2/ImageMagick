@@ -2032,7 +2032,7 @@ MagickBooleanType SyncExifProfile(Image *image,StringInfo *profile)
         break;  /* corrupt EXIF */
       tag_value=(ssize_t) ReadProfileShort(endian,q);
       format=(ssize_t) ReadProfileShort(endian,q+2);
-      if ((format-1) >= EXIF_NUM_FORMATS)
+      if ((format < 0) || ((format-1) >= EXIF_NUM_FORMATS))
         break;
       components=(ssize_t) ReadProfileLong(endian,q+4);
       if (components < 0)
@@ -2048,7 +2048,7 @@ MagickBooleanType SyncExifProfile(Image *image,StringInfo *profile)
             The directory entry contains an offset.
           */
           offset=(ssize_t)  ReadProfileLong(endian,q+8);
-          if ((size_t) (offset+number_bytes) > length)
+          if ((offset < 0) || ((size_t) (offset+number_bytes) > length))
             continue;
           if (~length < number_bytes)
             continue;  /* prevent overflow */

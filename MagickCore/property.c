@@ -213,7 +213,7 @@ MagickExport MagickBooleanType CloneImageProperties(Image *image,
 %
 %  DefineImageProperty() associates an assignment string of the form
 %  "key=value" with an artifact or options. It is equivelent to
-%  SetImageProperty()
+%  SetImageProperty().
 %
 %  The format of the DefineImageProperty method is:
 %
@@ -1501,12 +1501,12 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
             }
             case EXIF_FMT_SINGLE:
             {
-              EXIFMultipleValues(4,"%f",(double) *(float *) p1);
+              EXIFMultipleValues(4,"%f",(double)ReadPropertySignedLong(endian,p1));
               break;
             }
             case EXIF_FMT_DOUBLE:
             {
-              EXIFMultipleValues(8,"%f",*(double *) p1);
+              EXIFMultipleValues(8,"%f",(double)ReadPropertySignedLong(endian,p1));
               break;
             }
             default:
@@ -3963,7 +3963,7 @@ MagickExport MagickBooleanType SetImageProperty(Image *image,
     {
       /*
         Do not 'set' single letter properties - read only shorthand.
-       */
+      */
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
         "SetReadOnlyProperty","`%s'",property);
       return(MagickFalse);

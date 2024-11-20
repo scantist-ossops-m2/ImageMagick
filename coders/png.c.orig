@@ -1748,6 +1748,7 @@ Magick_png_read_raw_profile(png_struct *ping,Image *image,
     sp;
 
   png_uint_32
+    extent,
     length,
     nibbles;
 
@@ -1763,16 +1764,16 @@ Magick_png_read_raw_profile(png_struct *ping,Image *image,
                  13,14,15};
 
   sp=text[ii].text+1;
-  length=text[ii].text_length;
+  extent=text[ii].text_length;
   /* look for newline */
-  while ((*sp != '\n') && length--)
+  while ((*sp != '\n') && extent--)
     sp++;
 
   /* look for length */
-  while (((*sp == '\0' || *sp == ' ' || *sp == '\n')) && length--)
+  while (((*sp == '\0' || *sp == ' ' || *sp == '\n')) && extent--)
      sp++;
 
-  if (length == 0)
+  if (extent == 0)
     {
       png_warning(ping,"invalid profile length");
       return(MagickFalse);
@@ -1783,8 +1784,14 @@ Magick_png_read_raw_profile(png_struct *ping,Image *image,
   (void) LogMagickEvent(CoderEvent,GetMagickModule(),
        "      length: %lu",(unsigned long) length);
 
-  while (*sp != ' ' && *sp != '\n')
-     sp++;
+  while ((*sp != ' ' && *sp != '\n') && extent--)
+    sp++;
+
+  if (extent == 0)
+    {
+      png_warning(ping,"invalid profile length");
+      return(MagickFalse);
+    }
 
   /* allocate space */
   if (length == 0)

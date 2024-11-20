@@ -933,6 +933,8 @@ static Image *ReadMATImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (strncmp(MATLAB_HDR.identific, "MATLAB", 6))
     {
 MATLAB_KO:
+      if ((image != image2) && (image2 != (Image *) NULL))
+        image2=DestroyImage(image2);
       if (clone_info != (ImageInfo *) NULL)
         clone_info=DestroyImageInfo(clone_info);
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
@@ -996,7 +998,12 @@ MATLAB_KO:
          if (Frames == 0)
            ThrowReaderException(CorruptImageError,"ImproperImageHeader");
          break;
-      default: ThrowReaderException(CoderError, "MultidimensionalMatricesAreNotSupported");
+      default:
+        if (clone_info != (ImageInfo *) NULL)
+          clone_info=DestroyImageInfo(clone_info);
+        if ((image != image2) && (image2 != (Image *) NULL))
+          image2=DestroyImage(image2);
+        ThrowReaderException(CoderError, "MultidimensionalMatricesAreNotSupported");
     }
 
     MATLAB_HDR.Flag1 = ReadBlobXXXShort(image2);
@@ -1304,6 +1311,11 @@ done_reading:
           }
         }
         }
+
+    if (quantum_info != (QuantumInfo *) NULL)
+      quantum_info=DestroyQuantumInfo(quantum_info);
+    if (clone_info)
+      clone_info=DestroyImageInfo(clone_info);
   }
 
   RelinquishMagickMemory(BImgBuff);
@@ -1356,10 +1368,14 @@ END_OF_READING:
   }
   if (logging) (void)LogMagickEvent(CoderEvent,GetMagickModule(),"return");
   if (image==NULL)
+  {
     ThrowReaderException(CorruptImageError,"ImproperImageHeader")
+  }
   else
+  {
     if ((image != image2) && (image2 != (Image *) NULL))
       image2=DestroyImage(image2);
+  }
   return (image);
 }
 

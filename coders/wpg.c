@@ -1056,6 +1056,8 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
                 ThrowReaderException(CorruptImageError,"InvalidColormapIndex");
               if (WPG_Palette.StartIndex > WPG_Palette.NumOfEntries)
                 ThrowReaderException(CorruptImageError,"InvalidColormapIndex");
+              if (WPG_Palette.StartIndex > WPG_Palette.NumOfEntries)
+                ThrowReaderException(CorruptImageError,"InvalidColormapIndex");
               image->colors=WPG_Palette.NumOfEntries;
               if (!AcquireImageColormap(image,image->colors,exception))
                 goto NoMemory;

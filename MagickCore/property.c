@@ -212,7 +212,7 @@ MagickExport MagickBooleanType CloneImageProperties(Image *image,
 %
 %  DefineImageProperty() associates an assignment string of the form
 %  "key=value" with an artifact or options. It is equivelent to
-%  SetImageProperty()
+%  SetImageProperty().
 %
 %  The format of the DefineImageProperty method is:
 %
@@ -520,7 +520,7 @@ static inline signed int ReadPropertyMSBLong(const unsigned char **p,
   unsigned char
     buffer[4];
 
-  size_t
+  unsigned int
     value;
 
   if (*length < 4)
@@ -531,11 +531,11 @@ static inline signed int ReadPropertyMSBLong(const unsigned char **p,
     (*length)--;
     buffer[i]=(unsigned char) c;
   }
-  value=(size_t) (buffer[0] << 24);
-  value|=buffer[1] << 16;
-  value|=buffer[2] << 8;
-  value|=buffer[3];
-  quantum.unsigned_value=(value & 0xffffffff);
+  value=(unsigned int) buffer[0] << 24;
+  value|=(unsigned int) buffer[1] << 16;
+  value|=(unsigned int) buffer[2] << 8;
+  value|=(unsigned int) buffer[3];
+  quantum.unsigned_value=value & 0xffffffff;
   return(quantum.signed_value);
 }
 
@@ -571,9 +571,9 @@ static inline signed short ReadPropertyMSBShort(const unsigned char **p,
     (*length)--;
     buffer[i]=(unsigned char) c;
   }
-  value=(unsigned short) (buffer[0] << 8);
-  value|=buffer[1];
-  quantum.unsigned_value=(value & 0xffff);
+  value=(unsigned short) buffer[0] << 8;
+  value|=(unsigned short) buffer[1];
+  quantum.unsigned_value=value & 0xffff;
   return(quantum.signed_value);
 }
 
@@ -666,6 +666,11 @@ static MagickBooleanType Get8BIMProperty(const Image *image,const char *key,
     if ((count & 0x01) == 0)
       (void) ReadPropertyByte(&info,&length);
     count=(ssize_t) ReadPropertyMSBLong(&info,&length);
+    if ((count < 0) || ((size_t) count > length))
+      {
+        length=0; 
+        continue;
+      }
     if ((*name != '\0') && (*name != '#'))
       if ((resource == (char *) NULL) || (LocaleCompare(name,resource) != 0))
         {
@@ -742,14 +747,18 @@ static inline signed int ReadPropertySignedLong(const EndianType endian,
 
   if (endian == LSBEndian)
     {
-      value=(unsigned int) ((buffer[3] << 24) | (buffer[2] << 16) |
-        (buffer[1] << 8 ) | (buffer[0]));
-      quantum.unsigned_value=(value & 0xffffffff);
+      value=(unsigned int) buffer[3] << 24;
+      value|=(unsigned int) buffer[2] << 16;
+      value|=(unsigned int) buffer[1] << 8;
+      value|=(unsigned int) buffer[0];
+      quantum.unsigned_value=value & 0xffffffff;
       return(quantum.signed_value);
     }
-  value=(unsigned int) ((buffer[0] << 24) | (buffer[1] << 16) |
-    (buffer[2] << 8) | buffer[3]);
-  quantum.unsigned_value=(value & 0xffffffff);
+  value=(unsigned int) buffer[0] << 24;
+  value|=(unsigned int) buffer[1] << 16;
+  value|=(unsigned int) buffer[2] << 8;
+  value|=(unsigned int) buffer[3];
+  quantum.unsigned_value=value & 0xffffffff;
   return(quantum.signed_value);
 }
 
@@ -761,13 +770,17 @@ static inline unsigned int ReadPropertyUnsignedLong(const EndianType endian,
 
   if (endian == LSBEndian)
     {
-      value=(unsigned int) ((buffer[3] << 24) | (buffer[2] << 16) |
-        (buffer[1] << 8 ) | (buffer[0]));
-      return((unsigned int) (value & 0xffffffff));
+      value=(unsigned int) buffer[3] << 24;
+      value|=(unsigned int) buffer[2] << 16;
+      value|=(unsigned int) buffer[1] << 8;
+      value|=(unsigned int) buffer[0];
+      return(value & 0xffffffff);
     }
-  value=(unsigned int) ((buffer[0] << 24) | (buffer[1] << 16) |
-    (buffer[2] << 8) | buffer[3]);
-  return((unsigned int) (value & 0xffffffff));
+  value=(unsigned int) buffer[0] << 24;
+  value|=(unsigned int) buffer[1] << 16;
+  value|=(unsigned int) buffer[2] << 8;
+  value|=(unsigned int) buffer[3];
+  return(value & 0xffffffff);
 }   
 
 static inline signed short ReadPropertySignedShort(const EndianType endian,
@@ -787,13 +800,14 @@ static inline signed short ReadPropertySignedShort(const EndianType endian,
 
   if (endian == LSBEndian)
     {
-      value=(unsigned short) ((buffer[1] << 8) | buffer[0]);
-      quantum.unsigned_value=(value & 0xffff);
+      value=(unsigned short) buffer[1] << 8;
+      value|=(unsigned short) buffer[0];
+      quantum.unsigned_value=value & 0xffff;
       return(quantum.signed_value);
     }
-  value=(unsigned short) ((((unsigned char *) buffer)[0] << 8) |
-    ((unsigned char *) buffer)[1]);
-  quantum.unsigned_value=(value & 0xffff);
+  value=(unsigned short) buffer[0] << 8;
+  value|=(unsigned short) buffer[1];
+  quantum.unsigned_value=value & 0xffff;
   return(quantum.signed_value);
 }
 
@@ -805,12 +819,13 @@ static inline unsigned short ReadPropertyUnsignedShort(const EndianType endian,
 
   if (endian == LSBEndian)
     {
-      value=(unsigned short) ((buffer[1] << 8) | buffer[0]);
-      return((unsigned short) (value & 0xffff));
+      value=(unsigned short) buffer[1] << 8;
+      value|=(unsigned short) buffer[0];
+      return(value & 0xffff);
     }
-  value=(unsigned short) ((((unsigned char *) buffer)[0] << 8) |
-    ((unsigned char *) buffer)[1]);
-  return((unsigned short) (value & 0xffff));
+  value=(unsigned short) buffer[0] << 8;
+  value|=(unsigned short) buffer[1];
+  return(value & 0xffff);
 }
 
 static MagickBooleanType GetEXIFProperty(const Image *image,
@@ -1394,6 +1409,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
         components;
 
       q=(unsigned char *) (directory+(12*entry)+2);
+      if (q > (exif+length-12))
+        break;  /* corrupt EXIF */
       if (GetValueFromSplayTree(exif_resources,q) == q)
         break;
       (void) AddValueToSplayTree(exif_resources,q,q);
@@ -1402,6 +1419,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
       if (format >= (sizeof(tag_bytes)/sizeof(*tag_bytes)))
         break;
       components=(ssize_t) ReadPropertySignedLong(endian,q+4);
+      if (components < 0)
+        break;  /* corrupt EXIF */
       number_bytes=(size_t) components*tag_bytes[format];
       if (number_bytes < components)
         break;  /* prevent overflow */
@@ -1483,12 +1502,12 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
             }
             case EXIF_FMT_SINGLE:
             {
-              EXIFMultipleValues(4,"%f",(double) *(float *) p1);
+              EXIFMultipleValues(4,"%f",(double)ReadPropertySignedLong(endian,p1));
               break;
             }
             case EXIF_FMT_DOUBLE:
             {
-              EXIFMultipleValues(8,"%f",*(double *) p1);
+              EXIFMultipleValues(8,"%f",(double)ReadPropertySignedLong(endian,p1));
               break;
             }
             default:
@@ -3953,7 +3972,7 @@ MagickExport MagickBooleanType SetImageProperty(Image *image,
     {
       /*
         Do not 'set' single letter properties - read only shorthand.
-       */
+      */
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
         "SetReadOnlyProperty","`%s'",property);
       return(MagickFalse);

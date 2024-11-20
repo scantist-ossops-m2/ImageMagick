@@ -9657,6 +9657,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
   png_set_write_fn(ping,image,png_put_data,png_flush_data);
   pixel_info=(MemoryInfo *) NULL;
+  quantum_scanline = (Quantum *) NULL;
 
   if (setjmp(png_jmpbuf(ping)))
     {

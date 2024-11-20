@@ -806,7 +806,7 @@ OPENCL_ENDIF()
           beta=mwcReadPseudoRandomValue(r);
           alpha*=beta;
         }
-        noise=(QuantumRange*i*PerceptibleReciprocal(SigmaPoisson));
+        noise=(QuantumRange*i/SigmaPoisson);
         break;
       }
       case RandomNoise:

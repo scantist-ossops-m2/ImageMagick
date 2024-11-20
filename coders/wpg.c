@@ -1108,6 +1108,9 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
               bpp=BitmapHeader2.Depth;
 
             UnpackRaster:      
+              status=SetImageExtent(image,image->columns,image->rows,exception);
+              if (status == MagickFalse)
+                break;
               if ((image->colors == 0) && (bpp != 24))
                 {
                   image->colors=one << bpp;
@@ -1301,7 +1304,9 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
                 }
               image->columns=Bitmap2Header1.Width;
               image->rows=Bitmap2Header1.Height;
-
+              status=SetImageExtent(image,image->columns,image->rows,exception);
+              if (status == MagickFalse)
+                break;
               if ((image->colors == 0) && (bpp != 24))
                 {
                   size_t
@@ -1419,9 +1424,6 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
          ThrowReaderException(CoderError,"DataEncodingSchemeIsNotSupported");
       }
    }
-  status=SetImageExtent(image,image->columns,image->rows,exception);
-  if (status == MagickFalse)
-    return(DestroyImageList(image));
 
  Finish:
   (void) CloseBlob(image);

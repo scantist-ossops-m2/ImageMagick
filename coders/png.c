@@ -5518,7 +5518,7 @@ static Image *ReadMNGImage(const ImageInfo *image_info,
         p=NULL;
         chunk=(unsigned char *) NULL;
 
-        if (length != 0)
+        if ((length != 0) && (color_image != (Image *) NULL))
           {
             chunk=(unsigned char *) AcquireQuantumMemory(length,
              sizeof(*chunk));

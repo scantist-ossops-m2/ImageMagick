@@ -258,12 +258,6 @@ static MagickOffsetType TIFFSeekCustomStream(const MagickOffsetType offset,
     }
     case SEEK_CUR:
     {
-      if (((offset > 0) && (profile->offset > (SSIZE_MAX-offset))) ||
-          ((offset < 0) && (profile->offset < (-SSIZE_MAX-offset))))
-        {
-          errno=EOVERFLOW;
-          return(-1);
-        }
       if ((profile->offset+offset) < 0)
         return(-1);
       profile->offset+=offset;
@@ -3624,7 +3618,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
     TIFFUnmapBlob);
   if (tiff == (TIFF *) NULL)
     return(MagickFalse);
-  if (image->exception.severity > ErrorException)
+  if (exception->severity > ErrorException)
     {
       TIFFClose(tiff);
       return(MagickFalse);

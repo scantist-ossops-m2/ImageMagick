@@ -204,6 +204,8 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
     if (pcd_table[i] == (PCDTable *) NULL)
       {
         buffer=(unsigned char *) RelinquishMagickMemory(buffer);
+        for (j=0; j < i; j++)
+          pcd_table[j]=(PCDTable *) RelinquishMagickMemory(pcd_table[j]);
         ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
       }
@@ -215,6 +217,8 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
       if (r->length > 16)
         {
           buffer=(unsigned char *) RelinquishMagickMemory(buffer);
+          for (j=0; j <= i; j++)
+            pcd_table[j]=(PCDTable *) RelinquishMagickMemory(pcd_table[j]);
           return(MagickFalse);
         }
       PCDGetBits(16);
@@ -283,6 +287,9 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
           }
           default:
           {
+            for (i=0; i < (image->columns > 1536 ? 3 : 1); i++)
+              pcd_table[i]=(PCDTable *) RelinquishMagickMemory(pcd_table[i]);
+            buffer=(unsigned char *) RelinquishMagickMemory(buffer);
             ThrowBinaryException(CorruptImageError,"CorruptImage",
               image->filename);
           }

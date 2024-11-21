@@ -694,9 +694,16 @@ static MagickBooleanType TIFFGetProfiles(TIFF *tiff,Image *image,
   if ((TIFFGetField(tiff,TIFFTAG_RICHTIFFIPTC,&length,&profile) == 1) &&
       (profile != (unsigned char *) NULL))
     {
+      const TIFFField
+        *field;
+
       if (TIFFIsByteSwapped(tiff) != 0)
         TIFFSwabArrayOfLong((uint32 *) profile,(size_t) length);
-      status=ReadProfile(image,"iptc",profile,4L*length,exception);
+      field=TIFFFieldWithTag(tiff,TIFFTAG_RICHTIFFIPTC);
+      if (TIFFFieldDataType(field) == TIFF_LONG)
+        status=ReadProfile(image,"iptc",profile,4L*length,exception);
+      else
+        status=ReadProfile(image,"iptc",profile,length,exception);
     }
 #endif
 #if defined(TIFFTAG_XMLPACKET)
@@ -1941,7 +1948,12 @@ RestoreMSCWarning
         /*
           Convert stripped TIFF image.
         */
-        extent=TIFFStripSize(tiff)+sizeof(uint32);
+        extent=TIFFStripSize(tiff);
+#if defined(TIFF_VERSION_BIG)
+        extent+=sizeof(uint64);
+#else
+        extent+=sizeof(uint32);
+#endif
         strip_pixels=(unsigned char *) AcquireQuantumMemory(extent,
           sizeof(*strip_pixels));
         if (strip_pixels == (unsigned char *) NULL)
@@ -2037,7 +2049,12 @@ RestoreMSCWarning
         number_pixels=(MagickSizeType) columns*rows;
         if (HeapOverflowSanityCheck(rows,sizeof(*tile_pixels)) != MagickFalse)
           ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
-        extent=TIFFTileSize(tiff)+sizeof(uint32);
+        extent=TIFFTileSize(tiff);
+#if defined(TIFF_VERSION_BIG)
+        extent+=sizeof(uint64);
+#else
+        extent+=sizeof(uint32);
+#endif
         tile_pixels=(unsigned char *) AcquireQuantumMemory(extent,
           sizeof(*tile_pixels));
         if (tile_pixels == (unsigned char *) NULL)

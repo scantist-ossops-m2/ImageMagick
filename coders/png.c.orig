@@ -4612,13 +4612,7 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
 
         for (i=0; i < (ssize_t) length; i++)
-        {
-          int
-            c;
-
-          c=ReadBlobByte(image);
-          chunk[i]=(unsigned char) c;
-        }
+          chunk[i]=(unsigned char) ReadBlobByte(image);
 
         p=chunk;
       }
@@ -5502,13 +5496,7 @@ static Image *ReadMNGImage(const ImageInfo *image_info,
                 "MemoryAllocationFailed");
 
             for (i=0; i < (ssize_t) length; i++)
-            {
-              int
-                c;
-
-              c=ReadBlobByte(image);
-              chunk[i]=(unsigned char) c;
-            }
+              chunk[i]=(unsigned char) ReadBlobByte(image);
 
             p=chunk;
           }

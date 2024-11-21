@@ -340,6 +340,7 @@ static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (image->columns == 0) || (image->rows == 0) ||
       (image->colors == 0) || (image->colors > MaxColormapSize))
     {
+      xpm_colors=DestroySplayTree(xpm_colors);
       xpm_buffer=DestroyString(xpm_buffer);
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     }

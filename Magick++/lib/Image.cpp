@@ -5029,6 +5029,7 @@ void Magick::Image::read(MagickCore::Image *image,
       if (!quiet())
         throwExceptionExplicit(MagickCore::ImageWarning,
           "No image was loaded.");
+      return;
     }
   ThrowImageException;
 }

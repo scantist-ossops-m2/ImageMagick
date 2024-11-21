@@ -364,6 +364,8 @@ static Image *ReadGROUP4Image(const ImageInfo *image_info,
   if ((unique_file == -1) || (file == (FILE *) NULL))
     ThrowImageException(FileOpenError,"UnableToCreateTemporaryFile");
   length=fwrite("\111\111\052\000\010\000\000\000\016\000",1,10,file);
+  if (length != 10)
+    ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
   length=fwrite("\376\000\003\000\001\000\000\000\000\000\000\000",1,12,file);
   length=fwrite("\000\001\004\000\001\000\000\000",1,8,file);
   length=WriteLSBLong(file,image->columns);
@@ -390,10 +392,14 @@ static Image *ReadGROUP4Image(const ImageInfo *image_info,
   length=fwrite("\000\000\000\000",1,4,file);
   length=WriteLSBLong(file,(long) image->resolution.x);
   length=WriteLSBLong(file,1);
+  status=MagickTrue;
   for (length=0; (c=ReadBlobByte(image)) != EOF; length++)
-    (void) fputc(c,file);
+    if (fputc(c,file) != c)
+      status=MagickFalse;
   offset=(ssize_t) fseek(file,(ssize_t) offset,SEEK_SET);
   length=WriteLSBLong(file,(unsigned int) length);
+  if (ferror(file) != 0)
+    ThrowImageException(FileOpenError,"UnableToCreateTemporaryFile");
   (void) fclose(file);
   (void) CloseBlob(image);
   image=DestroyImage(image);
@@ -413,6 +419,8 @@ static Image *ReadGROUP4Image(const ImageInfo *image_info,
       (void) CopyMagickString(image->magick,"GROUP4",MagickPathExtent);
     }
   (void) RelinquishUniqueFileResource(filename);
+  if (status == MagickFalse)
+    image=DestroyImage(image);
   return(image);
 }
 #endif
@@ -626,42 +634,54 @@ static void TIFFGetProperties(TIFF *tiff,Image *image,ExceptionInfo *exception)
   unsigned long
     *tietz;
 
-
-  if (TIFFGetField(tiff,TIFFTAG_ARTIST,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_ARTIST,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:artist",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_COPYRIGHT,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_COPYRIGHT,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:copyright",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_DATETIME,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_DATETIME,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:timestamp",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_DOCUMENTNAME,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_DOCUMENTNAME,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:document",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_HOSTCOMPUTER,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_HOSTCOMPUTER,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:hostcomputer",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_IMAGEDESCRIPTION,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_IMAGEDESCRIPTION,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"comment",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_MAKE,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_MAKE,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:make",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_MODEL,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_MODEL,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:model",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_OPIIMAGEID,&count,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_OPIIMAGEID,&count,&text) == 1) &&
+      (text != (char *) NULL))
     {
       if (count >= MagickPathExtent)
         count=MagickPathExtent-1;
       (void) CopyMagickString(message,text,count+1);
       (void) SetImageProperty(image,"tiff:image-id",message,exception);
     }
-  if (TIFFGetField(tiff,TIFFTAG_PAGENAME,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_PAGENAME,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"label",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_SOFTWARE,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_SOFTWARE,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:software",text,exception);
-  if (TIFFGetField(tiff,33423,&count,&text) == 1)
+  if ((TIFFGetField(tiff,33423,&count,&text) == 1) &&
+      (text != (char *) NULL))
     {
       if (count >= MagickPathExtent)
         count=MagickPathExtent-1;
       (void) CopyMagickString(message,text,count+1);
       (void) SetImageProperty(image,"tiff:kodak-33423",message,exception);
     }
-  if (TIFFGetField(tiff,36867,&count,&text) == 1)
+  if ((TIFFGetField(tiff,36867,&count,&text) == 1) &&
+      (text != (char *) NULL))
     {
       if (count >= MagickPathExtent)
         count=MagickPathExtent-1;
@@ -690,7 +710,8 @@ static void TIFFGetProperties(TIFF *tiff,Image *image,ExceptionInfo *exception)
       default:
         break;
     }
-  if (TIFFGetField(tiff,37706,&length,&tietz) == 1)
+  if ((TIFFGetField(tiff,37706,&length,&tietz) == 1) &&
+      (tietz != (unsigned long *) NULL))
     {
       (void) FormatLocaleString(message,MagickPathExtent,"%lu",tietz[0]);
       (void) SetImageProperty(image,"tiff:tietz_offset",message,exception);

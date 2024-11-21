@@ -1949,7 +1949,7 @@ RestoreMSCWarning
         /*
           Convert stripped TIFF image.
         */
-        extent=4*TIFFStripSize(tiff);
+        extent=(samples_per_pixel+1)*TIFFStripSize(tiff);
 #if defined(TIFF_VERSION_BIG)
         extent+=image->columns*sizeof(uint64);
 #else

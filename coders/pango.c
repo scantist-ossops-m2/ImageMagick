@@ -185,6 +185,8 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
   assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info,exception);
   (void) ResetImagePage(image,"0x0+0+0");
+  if ((image->columns != 0) && (image->rows != 0))
+    (void) SetImageBackgroundColor(image,exception);
   /*
     Format caption.
   */
@@ -199,8 +201,11 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
     else
       property=InterpretImageProperties((ImageInfo *) image_info,image,option,
         exception);
-  (void) SetImageProperty(image,"caption",property,exception);
-  property=DestroyString(property);
+  if (property != (char *) NULL)
+    {
+      (void) SetImageProperty(image,"caption",property,exception);
+      property=DestroyString(property);
+    }
   caption=ConstantString(GetImageProperty(image,"caption",exception));
   /*
     Get context.

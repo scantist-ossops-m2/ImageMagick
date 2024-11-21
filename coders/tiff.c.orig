@@ -1894,7 +1894,7 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
         /*
           Convert stripped TIFF image.
         */
-        extent=2*TIFFStripSize(tiff);
+        extent=4*TIFFStripSize(tiff);
 #if defined(TIFF_VERSION_BIG)
         extent+=image->columns*sizeof(uint64);
 #else
@@ -3361,7 +3361,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
     TIFFUnmapBlob);
   if (tiff == (TIFF *) NULL)
     return(MagickFalse);
-  if (exception->severity > ErrorException)
+  if (image->exception.severity > ErrorException)
     {
       TIFFClose(tiff);
       return(MagickFalse);

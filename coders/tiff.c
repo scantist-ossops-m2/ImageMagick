@@ -631,42 +631,54 @@ static void TIFFGetProperties(TIFF *tiff,Image *image,ExceptionInfo *exception)
   unsigned long
     *tietz;
 
-
-  if (TIFFGetField(tiff,TIFFTAG_ARTIST,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_ARTIST,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:artist",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_COPYRIGHT,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_COPYRIGHT,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:copyright",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_DATETIME,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_DATETIME,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:timestamp",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_DOCUMENTNAME,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_DOCUMENTNAME,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:document",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_HOSTCOMPUTER,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_HOSTCOMPUTER,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:hostcomputer",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_IMAGEDESCRIPTION,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_IMAGEDESCRIPTION,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"comment",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_MAKE,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_MAKE,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:make",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_MODEL,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_MODEL,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:model",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_OPIIMAGEID,&count,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_OPIIMAGEID,&count,&text) == 1) &&
+      (text != (char *) NULL))
     {
       if (count >= MagickPathExtent)
         count=MagickPathExtent-1;
       (void) CopyMagickString(message,text,count+1);
       (void) SetImageProperty(image,"tiff:image-id",message,exception);
     }
-  if (TIFFGetField(tiff,TIFFTAG_PAGENAME,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_PAGENAME,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"label",text,exception);
-  if (TIFFGetField(tiff,TIFFTAG_SOFTWARE,&text) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_SOFTWARE,&text) == 1) &&
+      (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:software",text,exception);
-  if (TIFFGetField(tiff,33423,&count,&text) == 1)
+  if ((TIFFGetField(tiff,33423,&count,&text) == 1) &&
+      (text != (char *) NULL))
     {
       if (count >= MagickPathExtent)
         count=MagickPathExtent-1;
       (void) CopyMagickString(message,text,count+1);
       (void) SetImageProperty(image,"tiff:kodak-33423",message,exception);
     }
-  if (TIFFGetField(tiff,36867,&count,&text) == 1)
+  if ((TIFFGetField(tiff,36867,&count,&text) == 1) &&
+      (text != (char *) NULL))
     {
       if (count >= MagickPathExtent)
         count=MagickPathExtent-1;
@@ -695,7 +707,8 @@ static void TIFFGetProperties(TIFF *tiff,Image *image,ExceptionInfo *exception)
       default:
         break;
     }
-  if (TIFFGetField(tiff,37706,&length,&tietz) == 1)
+  if ((TIFFGetField(tiff,37706,&length,&tietz) == 1) &&
+      (tietz != (unsigned long *) NULL))
     {
       (void) FormatLocaleString(message,MagickPathExtent,"%lu",tietz[0]);
       (void) SetImageProperty(image,"tiff:tietz_offset",message,exception);
@@ -1425,69 +1438,7 @@ RestoreMSCWarning
       case COMPRESSION_ADOBE_DEFLATE: image->compression=ZipCompression; break;
       default: image->compression=RLECompression; break;
     }
-    /*
-      Allocate memory for the image and pixel buffer.
-    */
-    quantum_info=AcquireQuantumInfo(image_info,image);
-    if (quantum_info == (QuantumInfo *) NULL)
-      {
-        TIFFClose(tiff);
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-      }
-    if (sample_format == SAMPLEFORMAT_UINT)
-      status=SetQuantumFormat(image,quantum_info,UnsignedQuantumFormat);
-    if (sample_format == SAMPLEFORMAT_INT)
-      status=SetQuantumFormat(image,quantum_info,SignedQuantumFormat);
-    if (sample_format == SAMPLEFORMAT_IEEEFP)
-      status=SetQuantumFormat(image,quantum_info,FloatingPointQuantumFormat);
-    if (status == MagickFalse)
-      {
-        TIFFClose(tiff);
-        quantum_info=DestroyQuantumInfo(quantum_info);
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-      }
-    status=MagickTrue;
-    switch (photometric)
-    {
-      case PHOTOMETRIC_MINISBLACK:
-      {
-        quantum_info->min_is_white=MagickFalse;
-        break;
-      }
-      case PHOTOMETRIC_MINISWHITE:
-      {
-        quantum_info->min_is_white=MagickTrue;
-        break;
-      }
-      default:
-        break;
-    }
-    tiff_status=TIFFGetFieldDefaulted(tiff,TIFFTAG_EXTRASAMPLES,&extra_samples,
-      &sample_info);
-    if (tiff_status == 1)
-      {
-        (void) SetImageProperty(image,"tiff:alpha","unspecified",exception);
-        if (extra_samples == 0)
-          {
-            if ((samples_per_pixel == 4) && (photometric == PHOTOMETRIC_RGB))
-              image->alpha_trait=BlendPixelTrait;
-          }
-        else
-          for (i=0; i < extra_samples; i++)
-          {
-            image->alpha_trait=BlendPixelTrait;
-            if (sample_info[i] == EXTRASAMPLE_ASSOCALPHA)
-              {
-                SetQuantumAlphaType(quantum_info,DisassociatedQuantumAlpha);
-                (void) SetImageProperty(image,"tiff:alpha","associated",
-                  exception);
-              }
-            else
-              if (sample_info[i] == EXTRASAMPLE_UNASSALPHA)
-                (void) SetImageProperty(image,"tiff:alpha","unassociated",
-                  exception);
-          }
-      }
+    quantum_info=(QuantumInfo *) NULL;
     if ((photometric == PHOTOMETRIC_PALETTE) &&
         (pow(2.0,1.0*bits_per_sample) <= MaxColormapSize))
       {
@@ -1554,15 +1505,75 @@ RestoreMSCWarning
       {
         if (image_info->number_scenes != 0)
           if (image->scene >= (image_info->scene+image_info->number_scenes-1))
-            {
-              quantum_info=DestroyQuantumInfo(quantum_info);
-              break;
-            }
+            break;
         goto next_tiff_frame;
       }
     status=SetImageExtent(image,image->columns,image->rows,exception);
     if (status == MagickFalse)
       return(DestroyImageList(image));
+    /*
+      Allocate memory for the image and pixel buffer.
+    */
+    quantum_info=AcquireQuantumInfo(image_info,image);
+    if (quantum_info == (QuantumInfo *) NULL)
+      {
+        TIFFClose(tiff);
+        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+      }
+    if (sample_format == SAMPLEFORMAT_UINT)
+      status=SetQuantumFormat(image,quantum_info,UnsignedQuantumFormat);
+    if (sample_format == SAMPLEFORMAT_INT)
+      status=SetQuantumFormat(image,quantum_info,SignedQuantumFormat);
+    if (sample_format == SAMPLEFORMAT_IEEEFP)
+      status=SetQuantumFormat(image,quantum_info,FloatingPointQuantumFormat);
+    if (status == MagickFalse)
+      {
+        TIFFClose(tiff);
+        quantum_info=DestroyQuantumInfo(quantum_info);
+        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+      }
+    status=MagickTrue;
+    switch (photometric)
+    {
+      case PHOTOMETRIC_MINISBLACK:
+      {
+        quantum_info->min_is_white=MagickFalse;
+        break;
+      }
+      case PHOTOMETRIC_MINISWHITE:
+      {
+        quantum_info->min_is_white=MagickTrue;
+        break;
+      }
+      default:
+        break;
+    }
+    tiff_status=TIFFGetFieldDefaulted(tiff,TIFFTAG_EXTRASAMPLES,&extra_samples,
+      &sample_info);
+    if (tiff_status == 1)
+      {
+        (void) SetImageProperty(image,"tiff:alpha","unspecified",exception);
+        if (extra_samples == 0)
+          {
+            if ((samples_per_pixel == 4) && (photometric == PHOTOMETRIC_RGB))
+              image->alpha_trait=BlendPixelTrait;
+          }
+        else
+          for (i=0; i < extra_samples; i++)
+          {
+            image->alpha_trait=BlendPixelTrait;
+            if (sample_info[i] == EXTRASAMPLE_ASSOCALPHA)
+              {
+                SetQuantumAlphaType(quantum_info,DisassociatedQuantumAlpha);
+                (void) SetImageProperty(image,"tiff:alpha","associated",
+                  exception);
+              }
+            else
+              if (sample_info[i] == EXTRASAMPLE_UNASSALPHA)
+                (void) SetImageProperty(image,"tiff:alpha","unassociated",
+                  exception);
+          }
+      }
     method=ReadGenericMethod;
     if (TIFFGetField(tiff,TIFFTAG_ROWSPERSTRIP,&rows_per_strip) == 1)
       {
@@ -2072,7 +2083,8 @@ RestoreMSCWarning
     }
     SetQuantumImageType(image,quantum_type);
   next_tiff_frame:
-    quantum_info=DestroyQuantumInfo(quantum_info);
+    if (quantum_info != (QuantumInfo *) NULL)
+      quantum_info=DestroyQuantumInfo(quantum_info);
     if (photometric == PHOTOMETRIC_CIELAB)
       DecodeLabImage(image,exception);
     if ((photometric == PHOTOMETRIC_LOGL) ||

@@ -229,6 +229,9 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
   double
     result;
 
+  register ssize_t
+    i;
+
   result=0.0;
   switch (op)
   {
@@ -297,7 +300,9 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
     }
     case LeftShiftEvaluateOperator:
     {
-      result=(double) ((ssize_t) pixel << (ssize_t) (value+0.5));
+      result=(double) pixel;
+      for (i=0; i < (ssize_t) value; i++)
+        result*=2.0;
       break;
     }
     case LogEvaluateOperator:
@@ -361,7 +366,9 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
     }
     case RightShiftEvaluateOperator:
     {
-      result=(double) ((ssize_t) pixel >> (ssize_t) (value+0.5));
+      result=(double) pixel;
+      for (i=0; i < (ssize_t) value; i++)
+        result/=2.0;
       break;
     }
     case RootMeanSquareEvaluateOperator:

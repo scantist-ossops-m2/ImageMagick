@@ -2170,32 +2170,32 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image,
         (void) WriteBlobLSBLong(image,bmp_info.alpha_mask);
         (void) WriteBlobLSBLong(image,0x73524742U);  /* sRGB */
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (image->chromaticity.red_primary.x*0x40000000));
+          ((ssize_t) image->chromaticity.red_primary.x*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (image->chromaticity.red_primary.y*0x40000000));
+          ((ssize_t) image->chromaticity.red_primary.y*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          ((1.000f-(image->chromaticity.red_primary.x+
+          ((ssize_t) (1.000f-(image->chromaticity.red_primary.x+
           image->chromaticity.red_primary.y))*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (image->chromaticity.green_primary.x*0x40000000));
+          ((ssize_t) image->chromaticity.green_primary.x*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (image->chromaticity.green_primary.y*0x40000000));
+          ((ssize_t) image->chromaticity.green_primary.y*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          ((1.000f-(image->chromaticity.green_primary.x+
+          ((ssize_t) (1.000f-(image->chromaticity.green_primary.x+
           image->chromaticity.green_primary.y))*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (image->chromaticity.blue_primary.x*0x40000000));
+          ((ssize_t) image->chromaticity.blue_primary.x*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (image->chromaticity.blue_primary.y*0x40000000));
+          ((ssize_t) image->chromaticity.blue_primary.y*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          ((1.000f-(image->chromaticity.blue_primary.x+
+          ((ssize_t) (1.000f-(image->chromaticity.blue_primary.x+
           image->chromaticity.blue_primary.y))*0x40000000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (bmp_info.gamma_scale.x*0x10000));
+          ((ssize_t) bmp_info.gamma_scale.x*0x10000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (bmp_info.gamma_scale.y*0x10000));
+          ((ssize_t) bmp_info.gamma_scale.y*0x10000));
         (void) WriteBlobLSBLong(image,(unsigned int)
-          (bmp_info.gamma_scale.z*0x10000));
+          ((ssize_t) bmp_info.gamma_scale.z*0x10000));
         if ((image->rendering_intent != UndefinedIntent) ||
             (profile != (StringInfo *) NULL))
           {
@@ -2250,7 +2250,10 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image,
         bmp_colormap=(unsigned char *) AcquireQuantumMemory((size_t) (1UL <<
           bmp_info.bits_per_pixel),4*sizeof(*bmp_colormap));
         if (bmp_colormap == (unsigned char *) NULL)
-          ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+          {
+            pixel_info=RelinquishVirtualMemory(pixel_info);
+            ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+          }
         q=bmp_colormap;
         for (i=0; i < (ssize_t) MagickMin((ssize_t) image->colors,(ssize_t) bmp_info.number_colors); i++)
         {

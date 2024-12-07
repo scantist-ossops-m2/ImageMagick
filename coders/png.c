@@ -1748,6 +1748,7 @@ Magick_png_read_raw_profile(png_struct *ping,Image *image,
     sp;
 
   png_uint_32
+    extent,
     length,
     nibbles;
 
@@ -1763,21 +1764,34 @@ Magick_png_read_raw_profile(png_struct *ping,Image *image,
                  13,14,15};
 
   sp=text[ii].text+1;
+  extent=text[ii].text_length;
   /* look for newline */
-  while (*sp != '\n')
-     sp++;
+  while ((*sp != '\n') && extent--)
+    sp++;
 
   /* look for length */
-  while (*sp == '\0' || *sp == ' ' || *sp == '\n')
+  while (((*sp == '\0' || *sp == ' ' || *sp == '\n')) && extent--)
      sp++;
+
+  if (extent == 0)
+    {
+      png_warning(ping,"invalid profile length");
+      return(MagickFalse);
+    }
 
   length=(png_uint_32) StringToLong(sp);
 
   (void) LogMagickEvent(CoderEvent,GetMagickModule(),
        "      length: %lu",(unsigned long) length);
 
-  while (*sp != ' ' && *sp != '\n')
-     sp++;
+  while ((*sp != ' ' && *sp != '\n') && extent--)
+    sp++;
+
+  if (extent == 0)
+    {
+      png_warning(ping,"invalid profile length");
+      return(MagickFalse);
+    }
 
   /* allocate space */
   if (length == 0)
@@ -5486,7 +5500,7 @@ static Image *ReadMNGImage(const ImageInfo *image_info,
         p=NULL;
         chunk=(unsigned char *) NULL;
 
-        if (length != 0)
+        if ((length != 0) && (color_image != (Image *) NULL))
           {
             chunk=(unsigned char *) AcquireQuantumMemory(length,
              sizeof(*chunk));
@@ -8919,7 +8933,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
          (void) LogMagickEvent(CoderEvent,GetMagickModule(),
              "        i    (red,green,blue,alpha)");
 
-         for (i=0; i < 256; i++)
+         for (i=0; i < MagickMin(image->colors,256); i++)
          {
                (void) LogMagickEvent(CoderEvent,GetMagickModule(),
                    "        %d    (%d,%d,%d,%d)",

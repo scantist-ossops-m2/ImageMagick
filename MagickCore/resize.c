@@ -1083,9 +1083,9 @@ MagickPrivate ResizeFilter *AcquireResizeFilter(const Image *image,
     Adjust window function scaling to match windowing support for weighting
     function.  This avoids a division on every filter call.
   */
-  resize_filter->scale/=resize_filter->window_support;
+  resize_filter->scale*=PerceptibleReciprocal(resize_filter->window_support);
   /*
-   * Set Cubic Spline B,C values, calculate Cubic coefficients.
+    Set Cubic Spline B,C values, calculate Cubic coefficients.
   */
   B=0.0;
   C=0.0;
@@ -1616,7 +1616,7 @@ MagickPrivate double GetResizeFilterWeight(const ResizeFilter *resize_filter,
   */
   assert(resize_filter != (ResizeFilter *) NULL);
   assert(resize_filter->signature == MagickCoreSignature);
-  x_blur=fabs((double) x)/resize_filter->blur;  /* X offset with blur scaling */
+  x_blur=fabs((double) x)*PerceptibleReciprocal(resize_filter->blur);  /* X offset with blur scaling */
   if ((resize_filter->window_support < MagickEpsilon) ||
       (resize_filter->window == Box))
     scale=1.0;  /* Point or Box Filter -- avoid division by zero */

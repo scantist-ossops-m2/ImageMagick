@@ -45,6 +45,7 @@
 #include "MagickCore/artifact.h"
 #include "MagickCore/attribute.h"
 #include "MagickCore/cache.h"
+#include "MagickCore/cache-private.h"
 #include "MagickCore/cache-view.h"
 #include "MagickCore/channel.h"
 #include "MagickCore/color.h"
@@ -1047,6 +1048,8 @@ MagickExport MagickBooleanType ContrastStretchImage(Image *image,
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (SyncImagePixelCache(image,exception) == MagickFalse)
+    return(MagickFalse);
   if (SetImageGray(image,exception) != MagickFalse)
     (void) SetImageColorspace(image,GRAYColorspace,exception);
   black=(double *) AcquireQuantumMemory(GetPixelChannels(image),sizeof(*black));
@@ -1527,6 +1530,8 @@ MagickExport MagickBooleanType EqualizeImage(Image *image,
   */
   assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
+  if (SyncImagePixelCache(image,exception) == MagickFalse)
+    return(MagickFalse);
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   if (AccelerateEqualizeImage(image,exception) != MagickFalse)
     return(MagickTrue);
@@ -1819,7 +1824,7 @@ MagickExport MagickBooleanType GammaImage(Image *image,const double gamma,
   if (gamma != 0.0)
     for (i=0; i <= (ssize_t) MaxMap; i++)
       gamma_map[i]=ScaleMapToQuantum((double) (MaxMap*pow((double) i/
-        MaxMap,1.0/gamma)));
+        MaxMap,PerceptibleReciprocal(gamma))));
   if (image->storage_class == PseudoClass)
     for (i=0; i < (ssize_t) image->colors; i++)
     {
@@ -2377,7 +2382,7 @@ static inline double LevelPixel(const double black_point,
     return(pixel);
   scale=1.0/(white_point-black_point);
   level_pixel=QuantumRange*gamma_pow(scale*((double) pixel-black_point),
-    1.0/gamma);
+    PerceptibleReciprocal(gamma));
   return(level_pixel);
 }
 

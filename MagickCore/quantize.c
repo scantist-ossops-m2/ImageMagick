@@ -2343,8 +2343,8 @@ MagickExport MagickBooleanType PosterizeImage(Image *image,const size_t levels,
   const DitherMethod dither_method,ExceptionInfo *exception)
 {
 #define PosterizeImageTag  "Posterize/Image"
-#define PosterizePixel(pixel) (Quantum) (QuantumRange*(MagickRound( \
-  QuantumScale*pixel*(levels-1)))/MagickMax((ssize_t) levels-1,1))
+#define PosterizePixel(pixel) ClampToQuantum((MagickRealType) QuantumRange*( \
+  MagickRound(QuantumScale*pixel*(levels-1)))/MagickMax((ssize_t) levels-1,1))
 
   CacheView
     *image_view;
@@ -3288,6 +3288,10 @@ static int IntensityCompare(const void *x,const void *y)
   color_2=(PixelInfo *) y;
   intensity=GetPixelInfoIntensity((const Image *) NULL,color_1)-
     GetPixelInfoIntensity((const Image *) NULL,color_2);
+  if (intensity > (double) INT_MAX)
+    intensity=(double) INT_MAX;
+  if (intensity < (double) INT_MIN)
+    intensity=(double) INT_MIN;
   return((int) intensity);
 }
 

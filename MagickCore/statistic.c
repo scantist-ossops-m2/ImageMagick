@@ -228,6 +228,9 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
   double
     result;
 
+  register ssize_t
+    i;
+
   result=0.0;
   switch (op)
   {
@@ -257,7 +260,7 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
     }
     case AndEvaluateOperator:
     {
-      result=(double) ((size_t) pixel & (size_t) (value+0.5));
+      result=(double) ((ssize_t) pixel & (ssize_t) (value+0.5));
       break;
     }
     case CosineEvaluateOperator:
@@ -296,7 +299,9 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
     }
     case LeftShiftEvaluateOperator:
     {
-      result=(double) ((size_t) pixel << (size_t) (value+0.5));
+      result=(double) pixel;
+      for (i=0; i < (ssize_t) value; i++)
+        result*=2.0;
       break;
     }
     case LogEvaluateOperator:
@@ -339,7 +344,7 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
     }
     case OrEvaluateOperator:
     {
-      result=(double) ((size_t) pixel | (size_t) (value+0.5));
+      result=(double) ((ssize_t) pixel | (ssize_t) (value+0.5));
       break;
     }
     case PoissonNoiseEvaluateOperator:
@@ -350,13 +355,19 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
     }
     case PowEvaluateOperator:
     {
-      result=(double) (QuantumRange*pow((double) (QuantumScale*pixel),(double)
-        value));
+      if (pixel < 0)
+        result=(double) -(QuantumRange*pow((double) -(QuantumScale*pixel),
+          (double) value));
+      else
+        result=(double) (QuantumRange*pow((double) (QuantumScale*pixel),
+          (double) value));
       break;
     }
     case RightShiftEvaluateOperator:
     {
-      result=(double) ((size_t) pixel >> (size_t) (value+0.5));
+      result=(double) pixel;
+      for (i=0; i < (ssize_t) value; i++)
+        result/=2.0;
       break;
     }
     case RootMeanSquareEvaluateOperator:
@@ -408,7 +419,7 @@ static double ApplyEvaluateOperator(RandomInfo *random_info,const Quantum pixel,
     }
     case XorEvaluateOperator:
     {
-      result=(double) ((size_t) pixel ^ (size_t) (value+0.5));
+      result=(double) ((ssize_t) pixel ^ (ssize_t) (value+0.5));
       break;
     }
   }

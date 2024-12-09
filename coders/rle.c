@@ -224,7 +224,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     bits_per_pixel=(size_t) ReadBlobByte(image);
     number_colormaps=(size_t) ReadBlobByte(image);
     map_length=(unsigned char) ReadBlobByte(image);
-    if (map_length >= 64)
+    if (map_length >= 22)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     one=1;
     map_length=one << map_length;
@@ -322,6 +322,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pixel_info_length=image->columns*image->rows*
       MagickMax(number_planes_filled,4);
     pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
+    (void) ResetMagickMemory(pixels,0,pixel_info_length);
     if ((flags & 0x01) && !(flags & 0x02))
       {
         ssize_t

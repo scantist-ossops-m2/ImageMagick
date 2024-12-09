@@ -2054,7 +2054,7 @@ RestoreMSCWarning
                   break;
                 for (x=0; x < (ssize_t) image->columns; x++)
                 {
-                  *q++=(unsigned char) GetPixelIndex(image,p);
+                  *q++=(unsigned char) ((ssize_t) GetPixelIndex(image,p));
                   p+=GetPixelChannels(image);
                 }
                 if (image->previous == (Image *) NULL)
@@ -2095,7 +2095,8 @@ RestoreMSCWarning
                   break;
                 for (x=0; x < (ssize_t) image->columns; x++)
                 {
-                  Ascii85Encode(image,(unsigned char) GetPixelIndex(image,p));
+                  Ascii85Encode(image,(unsigned char) ((ssize_t)
+                    GetPixelIndex(image,p)));
                   p+=GetPixelChannels(image);
                 }
                 if (image->previous == (Image *) NULL)
@@ -2509,7 +2510,7 @@ RestoreMSCWarning
                   break;
                 for (x=0; x < (ssize_t) tile_image->columns; x++)
                 {
-                  *q++=(unsigned char) GetPixelIndex(tile_image,p);
+                  *q++=(unsigned char) ((ssize_t) GetPixelIndex(tile_image,p));
                   p+=GetPixelChannels(tile_image);
                 }
               }
@@ -2545,7 +2546,7 @@ RestoreMSCWarning
                 for (x=0; x < (ssize_t) tile_image->columns; x++)
                 {
                   Ascii85Encode(image,(unsigned char)
-                    GetPixelIndex(tile_image,p));
+                    ((ssize_t) GetPixelIndex(tile_image,p)));
                   p+=GetPixelChannels(image);
                 }
               }
